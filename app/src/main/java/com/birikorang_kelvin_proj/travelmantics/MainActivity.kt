@@ -2,6 +2,7 @@ package com.birikorang_kelvin_proj.travelmantics
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.birikorang_kelvin_proj.travelmantics.R
 
 class MainActivity : AppCompatActivity() {
 
