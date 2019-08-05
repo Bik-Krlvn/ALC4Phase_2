@@ -3,11 +3,12 @@ package com.birikorang_kelvin_proj.travelmantics.model
 import java.io.Serializable
 
 data class TravelDeal(
-    val tile: String,
-    val description: String,
-    val price: String,
-    val imageUrl: String?,
+    var tile: String,
+    var description: String,
+    var price: String,
+    var imageUrl: String?,
     var imageName: String?
-) : Serializable {
+)  : Serializable {
     var id: String? = null
+    constructor():this("","","","","")
 }

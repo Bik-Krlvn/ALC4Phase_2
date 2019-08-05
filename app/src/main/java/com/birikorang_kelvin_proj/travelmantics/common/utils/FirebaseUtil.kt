@@ -12,15 +12,14 @@ import kotlin.collections.ArrayList
 
 
 object FirebaseUtil {
-     var mFirebaseDatabase: FirebaseDatabase? = null
-     var mDatabaseReference: DatabaseReference? = null
-    private var mFirebaseAuth: FirebaseAuth? = null
-    private var mStorage: FirebaseStorage? = null
-    private var mStorageRef: StorageReference? = null
+    var mFirebaseDatabase: FirebaseDatabase? = null
+    var mDatabaseReference: DatabaseReference? = null
+    var mFirebaseAuth: FirebaseAuth? = null
+    var mStorage: FirebaseStorage? = null
+    var mStorageRef: StorageReference? = null
     private var mAuthListener: FirebaseAuth.AuthStateListener? = null
-     var mDeals: ArrayList<TravelDeal>? = null
     private val RC_SIGN_IN = 123
-    private var isAdmin: Boolean = false
+    var isAdmin: Boolean = false
 
     fun openFbReference(ref: String, callerActivity: DealsActivity) {
         mFirebaseDatabase = FirebaseDatabase.getInstance()
@@ -28,9 +27,9 @@ object FirebaseUtil {
         mAuthListener = FirebaseAuth.AuthStateListener {
             if (it.currentUser == null) {
                 signIn(callerActivity)
-                return@AuthStateListener
+            }else{
+                checkAdmin(it.uid, callerActivity)
             }
-            checkAdmin(it.uid,callerActivity)
         }
         connectStorage()
         mDatabaseReference = mFirebaseDatabase?.reference?.child(ref)
@@ -46,7 +45,7 @@ object FirebaseUtil {
         callerActivity: DealsActivity
     ) {
         isAdmin = false
-        val dbRef = uid?.let { mDatabaseReference?.child("administrators")?.child(it) }
+        val dbRef = uid?.let { mFirebaseDatabase?.reference?.child("administrators")?.child(it) }
         val listener = object : ChildEventListener {
             override fun onCancelled(p0: DatabaseError) {
 
@@ -77,6 +76,7 @@ object FirebaseUtil {
         callerActivity.startActivityForResult(
             AuthUI.getInstance()
                 .createSignInIntentBuilder()
+                .setIsSmartLockEnabled(false)
                 .setAvailableProviders(providers)
                 .build(),
             RC_SIGN_IN

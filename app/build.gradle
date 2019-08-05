@@ -47,6 +47,7 @@ dependencies {
     implementation "com.google.firebase:firebase-database:$firebase_database"
     implementation "com.google.firebase:firebase-storage:$firebase_storage"
     implementation "com.firebaseui:firebase-ui-auth:$firebase_ui_auth"
+    implementation "com.firebaseui:firebase-ui-storage:$firebase_ui_auth"
     //material
     implementation "androidx.recyclerview:recyclerview:$material_version"
     implementation "androidx.cardview:cardview:$material_version"

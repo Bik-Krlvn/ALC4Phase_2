@@ -18,16 +18,31 @@ class DealAdapter : RecyclerView.Adapter<DealVH>() {
     private var mFirebaseDatabase: FirebaseDatabase? = null
     private var mDatabaseReference: DatabaseReference? = null
     private var mChildListener: ChildEventListener? = null
-    private var deals: ArrayList<TravelDeal>? = null
+    private var deals: ArrayList<TravelDeal?>? = null
     private var itemCallBack: ItemCallBack<TravelDeal>? = null
 
-    init {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DealVH {
+        return DealVH(LayoutInflater.from(parent.context).inflate(R.layout.deal_list, parent, false))
+    }
+
+    override fun getItemCount() = deals?.size ?: 0
+
+
+    override fun onBindViewHolder(holder: DealVH, position: Int) {
+        val data = deals?.get(position)
+        holder.bind(data, itemCallBack)
+    }
+
+    fun setItemCallBack(callBack: ItemCallBack<TravelDeal>) {
+        itemCallBack = callBack
+    }
+
+    fun addData() {
+        val data = ArrayList<TravelDeal?>()
         mFirebaseDatabase = FirebaseUtil.mFirebaseDatabase
         mDatabaseReference = FirebaseUtil.mDatabaseReference
-        deals = FirebaseUtil.mDeals
         mChildListener = object : ChildEventListener {
             override fun onCancelled(p0: DatabaseError) {
-
             }
 
             override fun onChildMoved(p0: DataSnapshot, p1: String?) {
@@ -39,28 +54,15 @@ class DealAdapter : RecyclerView.Adapter<DealVH>() {
             override fun onChildAdded(p0: DataSnapshot, p1: String?) {
                 val d = p0.getValue(TravelDeal::class.java)
                 d?.id = p0.key
-                d?.let { deals?.add(it) }
-                deals?.size?.minus(1)?.let { notifyItemInserted(it) }
+                data.add(d)
+                deals = data
+                notifyDataSetChanged()
             }
 
             override fun onChildRemoved(p0: DataSnapshot) {
             }
         }
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DealVH {
-        return DealVH(LayoutInflater.from(parent.context).inflate(R.layout.deal_list, parent, false))
-    }
-
-    override fun getItemCount() = deals?.size ?: 0
-
-    override fun onBindViewHolder(holder: DealVH, position: Int) {
-        val data = deals?.get(position)
-        holder.bind(data, itemCallBack)
-    }
-
-    fun setItemCallBack(callBack: ItemCallBack<TravelDeal>) {
-        itemCallBack = callBack
+        mDatabaseReference?.addChildEventListener(mChildListener!!)
     }
 }
 
