@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.birikorang_kelvin_proj.travelmantics.R
@@ -25,26 +26,30 @@ class AddOrUpdateDealActivity : AppCompatActivity() {
     private var mDatabaseReference: DatabaseReference? = null
     private val PICTURE_RESULT = 42
     private var deal: TravelDeal? = null
+    private var loadingProgressBar: ProgressBar? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_or_update_deal)
         mFirebaseDatabase = FirebaseUtil.mFirebaseDatabase
         mDatabaseReference = FirebaseUtil.mDatabaseReference
+        loadingProgressBar = progressBar
+        loadingProgressBar?.visibility = View.GONE
+        if (FirebaseUtil.isAdmin) {
+            btnImage.visibility = View.VISIBLE
+        } else {
+            btnImage.visibility = View.GONE
+        }
         val intent = intent
         var dealExtras = intent.getSerializableExtra("Deal") as TravelDeal?
         if (dealExtras == null) {
-            dealExtras = TravelDeal("", "", "", null, null)
+            dealExtras = TravelDeal()
         }
         this.deal = dealExtras
         txtTitle.setText(deal?.tile)
         txtDescription.setText(deal?.description)
         txtPrice.setText(deal?.price)
         showImage(deal?.imageUrl)
-        if (FirebaseUtil.isAdmin){
-            btnImage.visibility = View.VISIBLE
-        }else{
-            btnImage.visibility = View.GONE
-        }
+
         btnImage.setOnClickListener {
             val pickImageIntent = Intent(Intent.ACTION_GET_CONTENT)
             pickImageIntent.type = "image/jpeg"
@@ -78,9 +83,14 @@ class AddOrUpdateDealActivity : AppCompatActivity() {
         }
     }
 
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        finish()
+    }
+
     private fun backToList() {
-        val intent = Intent(this, ListActivity::class.java)
-        startActivity(intent)
+        onBackPressed()
     }
 
     private fun clean() {
@@ -141,13 +151,19 @@ class AddOrUpdateDealActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICTURE_RESULT && resultCode == Activity.RESULT_OK) {
+            loadingProgressBar?.visibility = View.VISIBLE
             val imageUri = data?.data
             val ref = imageUri?.lastPathSegment?.let { FirebaseUtil.mStorageRef?.child(it) }
-            ref?.putFile(imageUri)?.addOnSuccessListener {task->
-                deal?.imageName = task.storage.name
+            ref?.putFile(imageUri)?.addOnProgressListener { snap ->
+                val progress = (100 * snap.bytesTransferred / snap.totalByteCount)
+                loadingProgressBar?.progress = progress.toInt()
+            }?.addOnSuccessListener { task ->
+                deal?.imageName = task.storage.path
                 ref.downloadUrl.addOnCompleteListener {
                     deal?.imageUrl = it.result.toString()
                     showImage(it.result.toString())
+                    loadingProgressBar?.progress = 0
+                    loadingProgressBar?.visibility = View.GONE
                 }
             }
 

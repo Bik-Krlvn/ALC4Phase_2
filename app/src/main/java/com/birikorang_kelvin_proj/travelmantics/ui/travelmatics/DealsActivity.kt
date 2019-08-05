@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.birikorang_kelvin_proj.travelmantics.R
@@ -70,6 +71,7 @@ class DealsActivity : AppCompatActivity(),ItemCallBack<TravelDeal> {
         val adapter = DealAdapter()
         val rvDeals: RecyclerView = rvDeals
         val dealsLayoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
+        rvDeals.addItemDecoration(DividerItemDecoration(this,DividerItemDecoration.VERTICAL))
         adapter.addData()
         adapter.setItemCallBack(this)
         rvDeals.adapter = adapter
